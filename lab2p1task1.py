@@ -1,7 +1,8 @@
 class Ticket:
-    def __init__(self, number, price):
+    def __init__(self, number, price, regular_price):
         self.number = number
         self.price = price
+        self.regular_price = regular_price
 
     @property
     def number(self):
@@ -10,6 +11,10 @@ class Ticket:
     @property
     def price(self):
         return int(self.__price)
+
+    @property
+    def regular_price(self):
+        return int(self.__regular_price)
 
     @number.setter
     def number(self, value):
@@ -25,76 +30,35 @@ class Ticket:
         else:
             raise TypeError('TypeError. Expected "int" or "float" type')
 
+    @regular_price.setter
+    def regular_price(self, value):
+        if isinstance(value, (int, float)):
+            self.__regular_price = value
+        else:
+            raise TypeError('TypeError. Expected "int" or "float" type')
+
     def __str__(self):
         return f'Number: {self.__number}, price: {int(self.__price)}'
 
 
 class RegularTicket(Ticket):
     def __init__(self, number, regular_price=100):
-        self.regular_price = regular_price
-        super().__init__(number, regular_price)
-
-    @property
-    def regular_price(self):
-        return self.__regular_price
-
-    @regular_price.setter
-    def regular_price(self, value):
-        if isinstance(value, (int, float)):
-            self.__regular_price = value
-        else:
-            raise TypeError('TypeError. Expected "int" or "float" type')
+        super().__init__(number, regular_price, regular_price)
 
 
 class AdvanceTicket(Ticket):
     def __init__(self, number, regular_price=100):
-        self.regular_price = regular_price
-        super().__init__(number, regular_price/10*6)
-
-    @property
-    def regular_price(self):
-        return self.__regular_price
-
-    @regular_price.setter
-    def regular_price(self, value):
-        if isinstance(value, (int, float)):
-            self.__regular_price = value
-        else:
-            raise TypeError('TypeError. Expected "int" or "float" type')
+        super().__init__(number, regular_price/10*6, regular_price)
 
 
 class StudentTicket(Ticket):
     def __init__(self, number, regular_price=100):
-        self.regular_price = regular_price
-        super().__init__(number, regular_price/10*5)
-
-    @property
-    def regular_price(self):
-        return self.__regular_price
-
-    @regular_price.setter
-    def regular_price(self, value):
-        if isinstance(value, (int, float)):
-            self.__regular_price = value
-        else:
-            raise TypeError('TypeError. Expected "int" or "float" type')
+        super().__init__(number, regular_price/10*5, regular_price)
 
 
 class LateTicket(Ticket):
     def __init__(self, number, regular_price=100):
-        self.regular_price = regular_price
-        super().__init__(number, regular_price/10*11)
-
-    @property
-    def regular_price(self):
-        return self.__regular_price
-
-    @regular_price.setter
-    def regular_price(self, value):
-        if isinstance(value, (int, float)):
-            self.__regular_price = value
-        else:
-            raise TypeError('TypeError. Expected "int" or "float" type')
+        super().__init__(number, regular_price/10*11, regular_price)
 
 
 def main():
