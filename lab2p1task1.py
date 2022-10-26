@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 tickets = []
+ans_variants = {'yes', 'yeah', 'y', 'Yes', 'Yeah', 'Y', 'Так', 'так', 'Да', 'да', 'д', 'т', 'Д', 'Т', '+', 'угу', 'ага'}
 
 
 class Ticket:
@@ -96,13 +97,20 @@ def ticket_interpreter(number, regular_price, date_of_event, isstudent):
             raise ValueError('This event has already took place')
 
 
+def answer_interpreter(answer):
+    if answer in ans_variants:
+        return True
+    else:
+        return False
+
+
 def main():
     continuation = True
 
     while continuation:
         date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
-        isstudent_asnwer = input('Are you a student? (+/-): ')
-        if isstudent_asnwer == '+':
+        isstudent_answer = input('Are you a student? (+/-): ')
+        if answer_interpreter(isstudent_answer):
             isstudent = True
         else:
             isstudent = False
@@ -110,7 +118,9 @@ def main():
 
         print('\nYour tickets:')
         print(*tickets, sep='\n')
-        if input('\nWant to buy one more ticket? (+/-): ') != '+':
+
+        continuation_answer = input('\nWant to buy one more ticket? (+/-): ')
+        if not answer_interpreter(continuation_answer):
             continuation = False
 
 
