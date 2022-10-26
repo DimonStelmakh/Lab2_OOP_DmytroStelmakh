@@ -1,9 +1,17 @@
+import random
+from datetime import datetime
+
+tickets = []
+
+
 class Ticket:
-    def __init__(self, number, price, regular_price, ticket_type):
+    def __init__(self, number, price, regular_price, date_of_event, ticket_type):
         self.number = number
         self.price = price
         self.regular_price = regular_price
         self.ticket_type = ticket_type
+        self.__date_of_event = date_of_event
+        self.__date_of_purchase = datetime.today()
 
     @property
     def number(self):
@@ -50,40 +58,60 @@ class Ticket:
             raise TypeError('TypeError. Expected "str" type')
 
     def __str__(self):
-        return f'Number: {self.__number}, price: {int(self.__price)}, type: {self.__ticket_type}'
+        return f'Number: {self.__number}, price: {int(self.__price)} (regular: {int(self.__regular_price)}), date: {self.__date_of_event}, type: {self.__ticket_type}'
 
 
 class RegularTicket(Ticket):
-    def __init__(self, number, regular_price=100):
-        super().__init__(number, regular_price, regular_price, 'Regular')
+    def __init__(self, number, regular_price, date_of_event):
+        super().__init__(number, regular_price, regular_price, date_of_event, 'Regular')
 
 
 class AdvanceTicket(Ticket):
-    def __init__(self, number, regular_price=100):
-        super().__init__(number, regular_price/10*6, regular_price, 'Advance')
+    def __init__(self, number, regular_price, date_of_event):
+        super().__init__(number, regular_price/10*6, regular_price, date_of_event, 'Advance')
 
 
 class StudentTicket(Ticket):
-    def __init__(self, number, regular_price=100):
-        super().__init__(number, regular_price/10*5, regular_price, 'Student')
+    def __init__(self, number, regular_price, date_of_event):
+        super().__init__(number, regular_price/10*5, regular_price, date_of_event, 'Student')
 
 
 class LateTicket(Ticket):
-    def __init__(self, number, regular_price=100):
-        super().__init__(number, regular_price/10*11, regular_price, 'Late')
+    def __init__(self, number, regular_price, date_of_event):
+        super().__init__(number, regular_price/10*11, regular_price, date_of_event, 'Late')
+
+
+def ticket_interpreter(number, regular_price, date_of_event, isstudent):
+    if isstudent:
+        tickets.append(StudentTicket(number, regular_price, date_of_event))
+    else:
+        days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
+        if days_left > 60:
+            tickets.append(AdvanceTicket(number, regular_price, date_of_event))
+        elif 0 <= days_left < 10:
+            tickets.append(LateTicket(number, regular_price, date_of_event))
+        elif 10 <= days_left <= 60:
+            tickets.append(RegularTicket(number, regular_price, date_of_event))
+        else:
+            raise ValueError('This event has already took place')
 
 
 def main():
-    rg = RegularTicket(18956, 100)
-    print(rg)
-    ad = AdvanceTicket(12389, 100)
-    print(ad)
-    st = StudentTicket(14634)  # default parameter (100) used here
-    print(st)
-    lt = LateTicket(48245)  # default parameter (100) used here
-    print(lt)
-    print("The real price of this late ticket is:", lt.price)
-    print("The regular price based on which the real one was made is:", lt.regular_price)
+    continuation = True
+
+    while continuation:
+        date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
+        isstudent_asnwer = input('Are you a student? (+/-): ')
+        if isstudent_asnwer == '+':
+            isstudent = True
+        else:
+            isstudent = False
+        ticket_interpreter(random.randint(1000, 9999), 100, date_of_event, isstudent)
+
+        print('\nYour tickets:')
+        print(*tickets, sep='\n')
+        if input('\nWant to buy one more ticket? (+/-): ') != '+':
+            continuation = False
 
 
 main()
