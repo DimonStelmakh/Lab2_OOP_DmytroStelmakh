@@ -89,9 +89,11 @@ def answer_interpreter(answer):
 
 def main():
     if answer_interpreter(input('Do you want to try our Pizza Of The Day? (+/-): ')):
-        pizza = PizzaOfTheDay(datetime.today().weekday()+1, input('Enter a size in centimeters: '))
+        pizza = PizzaOfTheDay(datetime.today().weekday()+1, input('Enter a size in centimeters: '),
+                              input('Add some extra ingredients if you want (or just press Enter to skip): '))
     else:
-        pizza = Pizza(input('Enter a name of pizza: '), input('Enter a size in centimeters: '))
+        pizza = Pizza(input('Enter a name of pizza: '), input('Enter a size in centimeters: '),
+                      input('Add some extra ingredients if you want (or just press Enter to skip): '))
 
     print('\n\033[92mYour order has been formed successfully!\033[0m', pizza, sep='\n')
 
