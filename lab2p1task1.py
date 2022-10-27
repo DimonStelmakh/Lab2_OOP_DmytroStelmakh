@@ -54,13 +54,13 @@ class Ticket:
 
     @ticket_type.setter
     def ticket_type(self, value):
-        if isinstance(value, str):
-            self.__ticket_type = value
-        else:
+        if not isinstance(value, str):
             raise TypeError('TypeError. Expected "str" type')
+        self.__ticket_type = value
 
     def __str__(self):
-        return f'Number: {self.__number}, price: {int(self.__price)} (regular: {int(self.__regular_price)}), date: {self.__date_of_event}, type: {self.__ticket_type}'
+        return f'Number: {self.__number}, price: {int(self.__price)} (regular: {int(self.__regular_price)}), \
+date: {self.__date_of_event}, type: {self.__ticket_type}'
 
 
 class RegularTicket(Ticket):
@@ -70,17 +70,22 @@ class RegularTicket(Ticket):
 
 class AdvanceTicket(Ticket):
     def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price/10*6, regular_price, date_of_event, 'Advance')
+        super().__init__(number, regular_price * 0.6, regular_price, date_of_event, 'Advance')
 
 
 class StudentTicket(Ticket):
-    def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price/10*5, regular_price, date_of_event, 'Student')
+    def __init__(self, number, regular_price, date_of_event, days_left):
+        if days_left > 60:
+            super().__init__(number, regular_price * 0.6 * 0.5, regular_price, date_of_event, 'StudentAdvanced')
+        elif 0 <= days_left < 10:
+            super().__init__(number, regular_price * 1.1 * 0.5, regular_price, date_of_event, 'StudentLate')
+        else:
+            super().__init__(number, regular_price * 0.5, regular_price, date_of_event, 'Student')
 
 
 class LateTicket(Ticket):
     def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price/10*11, regular_price, date_of_event, 'Late')
+        super().__init__(number, regular_price * 1.1, regular_price, date_of_event, 'Late')
 
 
 def ticket_interpreter(number, regular_price, date_of_event, isstudent):
@@ -127,11 +132,8 @@ def main():
             date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
             valid_date = validate_date_format(date_of_event)
 
-        isstudent_answer = input('Are you a student? (+/-): ')
-        if answer_interpreter(isstudent_answer):
-            isstudent = True
-        else:
-            isstudent = False
+        isstudent = answer_interpreter(input('Are you a student? (+/-): '))
+
         ticket_interpreter(random.randint(1000, 9999), 100, date_of_event, isstudent)
 
         print('\nYour tickets:')
