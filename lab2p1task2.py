@@ -32,7 +32,7 @@ class Pizza:
 
     @extra_ingredients.setter
     def extra_ingredients(self, value):
-        if value is None:
+        if not value:
             self.__extra_ingredients = None
         elif isinstance(value, (str, list)):
             self.__extra_ingredients = value
@@ -40,7 +40,7 @@ class Pizza:
             raise TypeError('Expected "str" or "list" type')
 
     def __str__(self):
-        if self.__extra_ingredients is None:
+        if not self.__extra_ingredients:
             return f'{self.__name} pizza in size of {self.__size} centimeters'
         else:
             return f'{self.__name} pizza with extra {self.__extra_ingredients} in size of {self.__size} centimeters'
@@ -61,30 +61,22 @@ class PizzaOfTheDay(Pizza):
 
     @staticmethod
     def dotw_interpreter(dotw):
-        if isinstance(dotw, str):
-            if dotw == "Monday" or dotw == "monday" or dotw == "Mon" or dotw == "mon" or dotw == "1":
-                return 1
-            elif dotw == "Tuesday" or dotw == "tuesday" or dotw == "Tue" or dotw == "tue" or dotw == "2":
-                return 2
-            elif dotw == "Wednesday" or dotw == "wednesday" or dotw == "Wed" or dotw == "wed" or dotw == "3":
-                return 3
-            elif dotw == "Thursday" or dotw == "thursday" or dotw == "Thu" or dotw == "thu" or dotw == "4":
-                return 4
-            elif dotw == "Friday" or dotw == "firday" or dotw == "Fri" or dotw == "fri" or dotw == "5":
-                return 5
-            elif dotw == "Saturday" or dotw == "saturday" or dotw == "Sat" or dotw == "sat" or dotw == "6":
-                return 6
-            elif dotw == "Sunday" or dotw == "sunday" or dotw == "Sun" or dotw == "sun" or dotw == "7":
-                return 7
-            else:
-                return 0
-        elif isinstance(dotw, int):
-            if 1 <= dotw <= 7:
-                return dotw
-            else:
-                raise ValueError('Numbers from 1 to 7 expected')
+        if dotw in ("Monday", "monday", "Mon", "mon", "1"):
+            return 1
+        elif dotw == "Tuesday" or dotw == "tuesday" or dotw == "Tue" or dotw == "tue" or dotw == "2":
+            return 2
+        elif dotw == "Wednesday" or dotw == "wednesday" or dotw == "Wed" or dotw == "wed" or dotw == "3":
+            return 3
+        elif dotw == "Thursday" or dotw == "thursday" or dotw == "Thu" or dotw == "thu" or dotw == "4":
+            return 4
+        elif dotw == "Friday" or dotw == "firday" or dotw == "Fri" or dotw == "fri" or dotw == "5":
+            return 5
+        elif dotw == "Saturday" or dotw == "saturday" or dotw == "Sat" or dotw == "sat" or dotw == "6":
+            return 6
+        elif dotw == "Sunday" or dotw == "sunday" or dotw == "Sun" or dotw == "sun" or dotw == "7":
+            return 7
         else:
-            raise TypeError('"str" or "int"/"float" type expected')
+            return 0
 
 
 def main():
@@ -92,7 +84,7 @@ def main():
     print('An order №1 is:')
     print(pizza1)
 
-    pizza2 = PizzaOfTheDay(7, 40)
+    pizza2 = PizzaOfTheDay('7', 40)
     print('An order №2 is:')
     print(pizza2)
 

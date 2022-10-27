@@ -1,9 +1,7 @@
 import random
 from datetime import datetime
 
-# total_value = 0
 tickets = []
-ans_variants = {'yes', 'yeah', 'y', 'Yes', 'Yeah', 'Y', 'Так', 'так', 'Да', 'да', 'д', 'т', 'Д', 'Т', '+', 'угу', 'ага'}
 
 
 class Ticket:
@@ -33,24 +31,21 @@ class Ticket:
 
     @number.setter
     def number(self, value):
-        if isinstance(value, int):
-            self.__number = value
-        else:
+        if not isinstance(value, int):
             raise TypeError('TypeError. Expected "int" type')
+        self.__number = value
 
     @price.setter
     def price(self, value):
-        if isinstance(value, (int, float)):
-            self.__price = value
-        else:
+        if not isinstance(value, (int, float)):
             raise TypeError('TypeError. Expected "int" or "float" type')
+        self.__price = value
 
     @regular_price.setter
     def regular_price(self, value):
-        if isinstance(value, (int, float)):
-            self.__regular_price = value
-        else:
+        if not isinstance(value, (int, float)):
             raise TypeError('TypeError. Expected "int" or "float" type')
+        self.__regular_price = value
 
     @ticket_type.setter
     def ticket_type(self, value):
@@ -89,29 +84,27 @@ class LateTicket(Ticket):
 
 
 def ticket_interpreter(number, regular_price, date_of_event, isstudent):
+    days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
+    if days_left < 0:
+        print('\033[93m''This event has already taken place\033[0m')
     if isstudent:
-        tickets.append(StudentTicket(number, regular_price, date_of_event))
-        print('\n\033[92mA student ticket has been added successfully!\033[0m')
+        tickets.append(StudentTicket(number, regular_price, date_of_event, days_left))
+        print('\033[92mA student ticket has been added successfully!\033[0m')
     else:
-        days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
         if days_left > 60:
             tickets.append(AdvanceTicket(number, regular_price, date_of_event))
-            print('\n\033[92mAn advance ticket has been added successfully!\033[0m')
+            print('\033[92mAn advance ticket has been added successfully!\033[0m')
         elif 0 <= days_left < 10:
             tickets.append(LateTicket(number, regular_price, date_of_event))
-            print('\n\033[92mA late ticket has been added successfully!\033[0m')
-        elif 10 <= days_left <= 60:
-            tickets.append(RegularTicket(number, regular_price, date_of_event))
-            print('\n\033[92mA regular ticket has been added successfully!\033[0m')
+            print('\033[92mA late ticket has been added successfully!\033[0m')
         else:
-            raise ValueError('This event has already took place')
+            tickets.append(RegularTicket(number, regular_price, date_of_event))
+            print('\033[92mA regular ticket has been added successfully!\033[0m')
 
 
 def answer_interpreter(answer):
-    if answer in ans_variants:
-        return True
-    else:
-        return False
+    return True if answer in ('yes', 'yeah', 'y', 'Yes', 'Yeah', 'Y', 'Так', 'так', 'Да', 'да', 'д', 'т', 'Д', 'Т', '+',
+                              'угу', 'ага') else False
 
 
 def validate_date_format(date_string):
@@ -120,14 +113,22 @@ def validate_date_format(date_string):
         return True
     except ValueError:
         print(f"\033[91mIncorrect data format, should be yyyy/mm/dd!\033[0m")
+        return False
+
+
+def ticket_finder(key):
+    try:
+        return [ele for ele in tickets if ele.number == key].pop()
+    except IndexError:
+        return '\033[93mThere is no such ticket!\033[0m'
 
 
 def main():
-    continuation = True
-    valid_date = False
     date_of_event = '2000/01/01'
 
+    continuation = True
     while continuation:
+        valid_date = False
         while not valid_date:
             date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
             valid_date = validate_date_format(date_of_event)
@@ -136,12 +137,17 @@ def main():
 
         ticket_interpreter(random.randint(1000, 9999), 100, date_of_event, isstudent)
 
-        print('\nYour tickets:')
-        print(*tickets, sep='\n')
+        print('\nYour tickets:', *tickets, sep='\n')
 
-        continuation_answer = input('\nWant to buy one more ticket? (+/-): ')
-        if not answer_interpreter(continuation_answer):
-            continuation = False
+        continuation = answer_interpreter(input('\nWant to buy one more ticket? (+/-): '))
+
+    find_answer = input('Want to find a ticket among those you have bought? (+/-): ')
+
+    continuation = True
+    while continuation:
+        if answer_interpreter(find_answer):
+            print(ticket_finder(int(input('\nEnter a ticket number: '))))
+            continuation = answer_interpreter(input('\nWant to find another one? (+/-): '))
 
 
 main()
