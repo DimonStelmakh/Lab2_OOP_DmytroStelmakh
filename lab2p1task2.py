@@ -61,19 +61,19 @@ class PizzaOfTheDay(Pizza):
 
     @staticmethod
     def dotw_interpreter(dotw):
-        if dotw in ("Monday", "monday", "Mon", "mon", "1"):
+        if dotw in ("Monday", "monday", "Mon", "mon", "First", "first", "1"):
             return 1
-        elif dotw == "Tuesday" or dotw == "tuesday" or dotw == "Tue" or dotw == "tue" or dotw == "2":
+        elif dotw in ("Tuesday", "tuesday", "Tue", "tue", "2"):
             return 2
-        elif dotw == "Wednesday" or dotw == "wednesday" or dotw == "Wed" or dotw == "wed" or dotw == "3":
+        elif dotw in ("Wednesday", "wednesday", "Wed", "wed", "3"):
             return 3
-        elif dotw == "Thursday" or dotw == "thursday" or dotw == "Thu" or dotw == "thu" or dotw == "4":
+        elif dotw in ("Thursday", "thursday", "Thu", "thu", "4"):
             return 4
-        elif dotw == "Friday" or dotw == "firday" or dotw == "Fri" or dotw == "fri" or dotw == "5":
+        elif dotw in ("Friday", "firday", "Fri", "fri", "5"):
             return 5
-        elif dotw == "Saturday" or dotw == "saturday" or dotw == "Sat" or dotw == "sat" or dotw == "6":
+        elif dotw in ("Saturday", "saturday", "Sat", "sat", "6"):
             return 6
-        elif dotw == "Sunday" or dotw == "sunday" or dotw == "Sun" or dotw == "sun" or dotw == "7":
+        elif dotw in ("Sunday", "sunday", "Sun", "sun", "Last", "last", "7"):
             return 7
         else:
             return 0
