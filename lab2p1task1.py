@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
 
+# total_value = 0
 tickets = []
 ans_variants = {'yes', 'yeah', 'y', 'Yes', 'Yeah', 'Y', 'Так', 'так', 'Да', 'да', 'д', 'т', 'Д', 'Т', '+', 'угу', 'ага'}
 
@@ -85,14 +86,18 @@ class LateTicket(Ticket):
 def ticket_interpreter(number, regular_price, date_of_event, isstudent):
     if isstudent:
         tickets.append(StudentTicket(number, regular_price, date_of_event))
+        print('\n\033[92mA student ticket has been added successfully!\033[0m')
     else:
         days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
         if days_left > 60:
             tickets.append(AdvanceTicket(number, regular_price, date_of_event))
+            print('\n\033[92mAn advance ticket has been added successfully!\033[0m')
         elif 0 <= days_left < 10:
             tickets.append(LateTicket(number, regular_price, date_of_event))
+            print('\n\033[92mA late ticket has been added successfully!\033[0m')
         elif 10 <= days_left <= 60:
             tickets.append(RegularTicket(number, regular_price, date_of_event))
+            print('\n\033[92mA regular ticket has been added successfully!\033[0m')
         else:
             raise ValueError('This event has already took place')
 
@@ -104,11 +109,24 @@ def answer_interpreter(answer):
         return False
 
 
+def validate_date_format(date_string):
+    try:
+        datetime.strptime(date_string, '%Y/%m/%d')
+        return True
+    except ValueError:
+        print(f"\033[91mIncorrect data format, should be yyyy/mm/dd!\033[0m")
+
+
 def main():
     continuation = True
+    valid_date = False
+    date_of_event = '2000/01/01'
 
     while continuation:
-        date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
+        while not valid_date:
+            date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
+            valid_date = validate_date_format(date_of_event)
+
         isstudent_answer = input('Are you a student? (+/-): ')
         if answer_interpreter(isstudent_answer):
             isstudent = True
