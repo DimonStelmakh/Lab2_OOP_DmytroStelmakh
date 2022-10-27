@@ -112,7 +112,7 @@ def validate_date_format(date_string):
         datetime.strptime(date_string, '%Y/%m/%d')
         return True
     except ValueError:
-        print(f"\033[91mIncorrect data format, should be yyyy/mm/dd!\033[0m")
+        print(f"\033[91mIncorrect date format (should be yyyy/mm/dd) or this date doesn't exist!\033[0m")
         return False
 
 
