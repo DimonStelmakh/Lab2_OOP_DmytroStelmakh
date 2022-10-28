@@ -64,42 +64,54 @@ class RegularTicket(Ticket):
 
 
 class AdvanceTicket(Ticket):
-    def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price * 0.6, regular_price, date_of_event, 'Advance')
-
-
-class StudentTicket(Ticket):
-    def __init__(self, number, regular_price, date_of_event, days_left):
-        if days_left > 60:
-            super().__init__(number, regular_price * 0.6 * 0.5, regular_price, date_of_event, 'StudentAdvanced')
-        elif 0 <= days_left < 10:
-            super().__init__(number, regular_price * 1.1 * 0.5, regular_price, date_of_event, 'StudentLate')
-        else:
-            super().__init__(number, regular_price * 0.5, regular_price, date_of_event, 'Student')
+    def __init__(self, number, price, regular_price, date_of_event, ticket_type):
+        super().__init__(number, price * 0.6, regular_price, date_of_event, ticket_type)
 
 
 class LateTicket(Ticket):
+    def __init__(self, number, price, regular_price, date_of_event, ticket_type):
+        super().__init__(number, price * 1.1, regular_price, date_of_event, ticket_type)
+
+
+class StudentTicket(Ticket):
+    def __init__(self, number, regular_price, date_of_event, ticket_type):
+        super().__init__(number, regular_price * 0.5, regular_price, date_of_event, ticket_type)
+
+
+class StudentLateTicket(StudentTicket, LateTicket):
     def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price * 1.1, regular_price, date_of_event, 'Late')
+        super().__init__(number, regular_price, date_of_event, 'StudentLate')
+
+
+class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
+    def __init__(self, number, regular_price, date_of_event):
+        super().__init__(number, regular_price, date_of_event, 'StudentAdvance')
 
 
 def ticket_interpreter(number, regular_price, date_of_event, isstudent):
     days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
     if days_left < 0:
-        print('\033[93m''This event has already taken place\033[0m')
+        return '\033[93m''This event has already taken place\033[0m'
     if isstudent:
-        tickets.append(StudentTicket(number, regular_price, date_of_event, days_left))
-        print('\033[92mA student ticket has been added successfully!\033[0m')
+        if days_left > 60:
+            tickets.append(StudentAdvanceTicket(number, regular_price, date_of_event))
+            return '\033[92mA student advance ticket has been added successfully!\033[0m'
+        elif 0 <= days_left < 10:
+            tickets.append(StudentLateTicket(number, regular_price, date_of_event))
+            return '\033[92mA student late ticket has been added successfully!\033[0m'
+        else:
+            tickets.append(StudentTicket(number, regular_price, date_of_event, 'Student'))
+            return '\033[92mA student ticket has been added successfully!\033[0m'
     else:
         if days_left > 60:
-            tickets.append(AdvanceTicket(number, regular_price, date_of_event))
-            print('\033[92mAn advance ticket has been added successfully!\033[0m')
+            tickets.append(AdvanceTicket(number, regular_price, regular_price, date_of_event, 'Advance'))
+            return '\033[92mAn advance ticket has been added successfully!\033[0m'
         elif 0 <= days_left < 10:
-            tickets.append(LateTicket(number, regular_price, date_of_event))
-            print('\033[92mA late ticket has been added successfully!\033[0m')
+            tickets.append(LateTicket(number, regular_price, regular_price, date_of_event, 'Late'))
+            return '\033[92mA late ticket has been added successfully!\033[0m'
         else:
             tickets.append(RegularTicket(number, regular_price, date_of_event))
-            print('\033[92mA regular ticket has been added successfully!\033[0m')
+            return '\033[92mA regular ticket has been added successfully!\033[0m'
 
 
 def answer_interpreter(answer):
@@ -110,10 +122,11 @@ def answer_interpreter(answer):
 def validate_date_format(date_string):
     try:
         datetime.strptime(date_string, '%Y/%m/%d')
-        return True
     except ValueError:
-        print(f"\033[91mIncorrect date format (should be yyyy/mm/dd) or this date doesn't exist!\033[0m")
+        print("\033[91mIncorrect date format (should be yyyy/mm/dd) or this date doesn't exist!\033[0m")
         return False
+    else:
+        return True
 
 
 def ticket_finder(key):
@@ -121,6 +134,8 @@ def ticket_finder(key):
         return [ele for ele in tickets if ele.number == key].pop()
     except IndexError:
         return '\033[93mThere is no such ticket!\033[0m'
+    except ValueError:
+        return '\033[91mEnter a number in an appropriate format: 4 numerals\033[0m'
 
 
 def main():
@@ -135,7 +150,7 @@ def main():
 
         isstudent = answer_interpreter(input('Are you a student? (+/-): '))
 
-        ticket_interpreter(random.randint(1000, 9999), 100, date_of_event, isstudent)
+        print(ticket_interpreter(random.randint(1000, 9999), 100, date_of_event, isstudent))
 
         print('\nYour tickets:', *tickets, sep='\n')
 
