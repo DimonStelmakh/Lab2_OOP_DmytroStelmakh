@@ -30,8 +30,8 @@ class Pizza:
     def size(self, value):
         try:
             self.__size = int(value)
-        except TypeError:
-            print('Enter a number!')
+        except ValueError:
+            raise ValueError('Expected a number')
 
     @extra_ingredients.setter
     def extra_ingredients(self, value):
