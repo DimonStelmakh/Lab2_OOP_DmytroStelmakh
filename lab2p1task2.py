@@ -52,34 +52,18 @@ class Pizza:
 class PizzaOfTheDay(Pizza):
     def __init__(self, day_of_the_week, size, extra_ingredients=None):
         # self.__dotw = self.dotw_interpreter(day_of_the_week)
-        match day_of_the_week:
-            case 1: super().__init__('Cheese', size, extra_ingredients)
-            case 2: super().__init__('Veggie', size, extra_ingredients)
-            case 3: super().__init__('Pepperoni', size, extra_ingredients)
-            case 4: super().__init__('Meat', size, extra_ingredients)
-            case 5: super().__init__('Margherita', size, extra_ingredients)
-            case 6: super().__init__('BBQ Chicken', size, extra_ingredients)
-            case 7: super().__init__('Supreme', size, extra_ingredients)
-            case 0: raise ValueError('This is not a day of the week!')
 
-    # @staticmethod
-    # def dotw_interpreter(dotw):
-    #     if dotw in ("Monday", "monday", "Mon", "mon", "First", "first", "1"):
-    #         return 1
-    #     elif dotw in ("Tuesday", "tuesday", "Tue", "tue", "2"):
-    #         return 2
-    #     elif dotw in ("Wednesday", "wednesday", "Wed", "wed", "3"):
-    #         return 3
-    #     elif dotw in ("Thursday", "thursday", "Thu", "thu", "4"):
-    #         return 4
-    #     elif dotw in ("Friday", "firday", "Fri", "fri", "5"):
-    #         return 5
-    #     elif dotw in ("Saturday", "saturday", "Sat", "sat", "6"):
-    #         return 6
-    #     elif dotw in ("Sunday", "sunday", "Sun", "sun", "Last", "last", "7"):
-    #         return 7
-    #     else:
-    #         return 0
+        pizza_of_the_day = {
+            1: "Cheese",
+            2: "Veggie",
+            3: "Pepperoni",
+            4: "Meat",
+            5: "Margherita",
+            6: "BBQ Chicken",
+            7: "Supreme"
+        }
+
+        super().__init__(pizza_of_the_day[day_of_the_week], size, extra_ingredients)
 
 
 def answer_interpreter(answer):
