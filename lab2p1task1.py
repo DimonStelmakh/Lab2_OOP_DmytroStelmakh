@@ -88,7 +88,7 @@ class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
         super().__init__(number, regular_price, date_of_event, 'Student Advance')
 
 
-def ticket_interpreter(number, regular_price, date_of_event, isstudent):
+def ticket_interpreter(number, regular_price, date_of_event, isstudent, day_late=10):
     days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
     if days_left < 0:
         return '\033[93m''This event has already taken place\033[0m'
@@ -156,11 +156,11 @@ def main():
 
         continuation = answer_interpreter(input('\nWant to buy one more ticket? (+/-): '))
 
-    find_answer = input('Want to find a ticket among those you have bought? (+/-): ')
+    find_answer = answer_interpreter(input('Want to find a ticket among those you have bought? (+/-): '))
 
     continuation = True
     while continuation:
-        if answer_interpreter(find_answer):
+        if find_answer:
             print(ticket_finder(int(input('\nEnter a ticket number: '))))
             continuation = answer_interpreter(input('\nWant to find another one? (+/-): '))
 
