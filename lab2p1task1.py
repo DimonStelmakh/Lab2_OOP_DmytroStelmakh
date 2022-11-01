@@ -80,12 +80,12 @@ class StudentTicket(Ticket):
 
 class StudentLateTicket(StudentTicket, LateTicket):
     def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price, date_of_event, 'StudentLate')
+        super().__init__(number, regular_price, date_of_event, 'Student Late')
 
 
 class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
     def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price, date_of_event, 'StudentAdvance')
+        super().__init__(number, regular_price, date_of_event, 'Student Advance')
 
 
 def ticket_interpreter(number, regular_price, date_of_event, isstudent):
@@ -139,7 +139,7 @@ def ticket_finder(key):
 
 
 def main():
-    date_of_event = '2000/01/01'
+    date_of_event = '2000/01/01'  # на випадок проблем з інпутом
 
     continuation = True
     while continuation:
