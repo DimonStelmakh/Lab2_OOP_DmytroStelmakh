@@ -88,25 +88,35 @@ class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
         super().__init__(number, regular_price, date_of_event, 'Student Advance')
 
 
-def ticket_interpreter(number, regular_price, date_of_event, isstudent, day_late=10):
+class Event:
+    def __init__(self, date_of_event, regular_price, kfs, days):
+        self.date_of_event = date_of_event
+        self.regular_price = regular_price
+        self.kfs = {
+
+        }
+        self.days = {}
+
+
+def ticket_interpreter(number, regular_price, date_of_event, isstudent, days_advance=60, days_late=10):
     days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
     if days_left < 0:
         return '\033[93m''This event has already taken place\033[0m'
     if isstudent:
-        if days_left > 60:
+        if days_left > days_advance:
             tickets.append(StudentAdvanceTicket(number, regular_price, date_of_event))
             return '\033[92mA student advance ticket has been added successfully!\033[0m'
-        elif 0 <= days_left < 10:
+        elif 0 <= days_left < days_late:
             tickets.append(StudentLateTicket(number, regular_price, date_of_event))
             return '\033[92mA student late ticket has been added successfully!\033[0m'
         else:
             tickets.append(StudentTicket(number, regular_price, date_of_event, 'Student'))
             return '\033[92mA student ticket has been added successfully!\033[0m'
     else:
-        if days_left > 60:
+        if days_left > days_advance:
             tickets.append(AdvanceTicket(number, regular_price, regular_price, date_of_event, 'Advance'))
             return '\033[92mAn advance ticket has been added successfully!\033[0m'
-        elif 0 <= days_left < 10:
+        elif 0 <= days_left < days_late:
             tickets.append(LateTicket(number, regular_price, regular_price, date_of_event, 'Late'))
             return '\033[92mA late ticket has been added successfully!\033[0m'
         else:
