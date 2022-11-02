@@ -89,13 +89,27 @@ class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
 
 
 class Event:
-    def __init__(self, date_of_event, regular_price, kfs, days):
+    def __init__(self, name, date_of_event, regular_price, days_separation_names=None, days=None, ticket_types=None,
+                 kfs=None):
+
+        if len(kfs) is not len(ticket_types) and len(days_separation_names) is not len(days):
+            raise AttributeError('\033[91mThe number of tickets in not the same as the number of koefs\
+            or the number\nof days separation names in not the same as the number of days listed\033[0m')
+
+        self.name = name
         self.date_of_event = date_of_event
         self.regular_price = regular_price
-        self.kfs = {
 
-        }
-        self.days = {}
+        if days and kfs:
+            self.kfs = {}
+            for i in range(len(kfs)):
+                self.kfs[ticket_types[i]] = kfs[i]
+            self.days = {}
+            for i in range(len(days)):
+                self.days[days_separation_names[i]] = days[i]
+
+        print(self.kfs)
+        print(self.days)
 
 
 def ticket_interpreter(number, regular_price, date_of_event, isstudent, days_advance=60, days_late=10):
@@ -148,8 +162,68 @@ def ticket_finder(key):
         return '\033[91mEnter a number in an appropriate format: 4 numerals\033[0m'
 
 
+def add_event():
+    all_single_ticket_types = ['Student', 'Regular', 'Late', 'Advance']
+
+    name = str(input('Enter a name of the event: '))
+
+    valid_date = False
+    while not valid_date:
+        date = input('Enter a date of the event in format yyyy/mm/dd: ')
+        valid_date = validate_date_format(date)
+
+    try:
+        price = int(input('Enter a regular price of the event: '))
+    except ValueError:
+        print('\033[93mEnter a number!\033[0m')
+
+    ticket_types = []
+    kfs = []
+    answer = True
+    i = 0
+    while answer:
+        answer = answer_interpreter(input(f'Do you want to add a new ticket type for {name}?: '))
+        ticket_type = input('Enter a name of the ticket type: ')
+        if ticket_type in all_single_ticket_types:
+            ticket_types[i] = ticket_type
+
+        max_kf = 10
+
+        success = False
+        kf = 1
+        while not success:
+            try:
+                kf = float(input(f'Enter a coefficient that the regular price is multiplied by for the {ticket_type}'
+                                 f'ticket.\nDefault value is 1 (no multiplication): '))
+            except ValueError:
+                print('\033[93mEnter a number!\033[0m')
+                success = False
+            else:
+                if not 0 <= kf <= max_kf:
+                    success = False
+                    print(f'\033[93mEnter a number between 0 and {max_kf}!\033[0m')
+
+    answer = True
+    i = 0
+    while answer:
+        answer = answer_interpreter(input(f'Do you want to add a new key number of days for ticket types'
+                                          f'separation for {name}?: '))
+
+
+
+
+
+
+
+
+
+
+
 def main():
     date_of_event = '2000/01/01'  # на випадок проблем з інпутом
+
+    ev = Event('Stepan Hiha concert', '2023/02/02', 200, ['Late', 'Advance'], [10, 60], ['Late', 'Advance', 'Student'],
+               [1.1, 0.6, 0.5])
 
     continuation = True
     while continuation:
