@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 tickets = []
+events = []
 
 
 class Ticket:
@@ -89,8 +90,7 @@ class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
 
 
 class Event:
-    def __init__(self, name, date_of_event, regular_price, days_separation_names=None, days=None, ticket_types=None,
-                 kfs=None):
+    def __init__(self, name, date_of_event, regular_price, days_separation_names, days, ticket_types, kfs):
 
         if len(kfs) is not len(ticket_types) and len(days_separation_names) is not len(days):
             raise AttributeError('\033[91mThe number of tickets in not the same as the number of koefs\
@@ -100,16 +100,14 @@ class Event:
         self.date_of_event = date_of_event
         self.regular_price = regular_price
 
-        if days and kfs:
+        if kfs:
             self.kfs = {}
             for i in range(len(kfs)):
                 self.kfs[ticket_types[i]] = kfs[i]
+        if days:
             self.days = {}
             for i in range(len(days)):
                 self.days[days_separation_names[i]] = days[i]
-
-        print(self.kfs)
-        print(self.days)
 
 
 def ticket_interpreter(number, regular_price, date_of_event, isstudent, days_advance=60, days_late=10):
@@ -163,6 +161,8 @@ def ticket_finder(key):
 
 
 def add_event():
+    date = '2000/01/01'  # на випадок проблем з інпутом
+
     all_single_ticket_types = ['Student', 'Regular', 'Late', 'Advance']
 
     name = str(input('Enter a name of the event: '))
@@ -172,58 +172,108 @@ def add_event():
         date = input('Enter a date of the event in format yyyy/mm/dd: ')
         valid_date = validate_date_format(date)
 
-    try:
-        price = int(input('Enter a regular price of the event: '))
-    except ValueError:
-        print('\033[93mEnter a number!\033[0m')
+    price = 100
+    success = False
+    while not success:
+        try:
+            price = int(input('Enter a regular price of the event: '))
+        except ValueError:
+            print('\033[93mEnter a number!\033[0m')
+        else:
+            if price >= 0:
+                success = True
+            else:
+                print('\033[93mEnter a price which is bigger than 0 or equal to 0!\033[0m')
 
     ticket_types = []
     kfs = []
-    answer = True
+    answer = answer_interpreter(input(f'Do you want to add a new ticket type for {name}?: '))
     i = 0
     while answer:
-        answer = answer_interpreter(input(f'Do you want to add a new ticket type for {name}?: '))
-        ticket_type = input('Enter a name of the ticket type: ')
-        if ticket_type in all_single_ticket_types:
-            ticket_types[i] = ticket_type
+
+        ticket_type = ''
+        success = False
+        while not success:
+            ticket_type = input('Enter a name of the ticket type: ')
+            if ticket_type in all_single_ticket_types:
+                ticket_types.insert(i, ticket_type)
+                success = True
+            else:
+                print(f'\033[93mThis type of ticket is unavailable to add!\033[0m\n'
+                      f'Here is the list of available tickets:\n{all_single_ticket_types}')
 
         max_kf = 10
 
         success = False
-        kf = 1
         while not success:
             try:
                 kf = float(input(f'Enter a coefficient that the regular price is multiplied by for the {ticket_type}'
-                                 f'ticket.\nDefault value is 1 (no multiplication): '))
+                                 f' ticket.\nDefault value is 1 (no multiplication): '))
             except ValueError:
                 print('\033[93mEnter a number!\033[0m')
-                success = False
             else:
-                if not 0 <= kf <= max_kf:
-                    success = False
+                if 0 <= kf <= max_kf:
+                    kfs.insert(i, kf)
+                    print(f'\033[92mA ticket type {ticket_type} for event {name} has been added successfully!\033[0m')
+                    i += 1
+                    success = True
+                else:
                     print(f'\033[93mEnter a number between 0 and {max_kf}!\033[0m')
 
-    answer = True
+        answer = answer_interpreter(input(f'Do you want to add a new ticket type for {name}?: '))
+
+    days_separation_names = []
+    days = []
+    answer = answer_interpreter(input(f'Do you want to add a new key number of days for ticket types'
+                                      f'separation for {name}?: '))
     i = 0
     while answer:
+        days_separation_name = ''
+        success = False
+        while not success:
+            days_separation_name = input('Enter a name of the number of days for separation: ')
+            if days_separation_name in all_single_ticket_types:
+                days_separation_names.insert(i, days_separation_name)
+                success = True
+            else:
+                print(f'\033[93mThis days of separation number is unavailable to add!\033[0m\n'
+                      f'Here is the list of available names for days of separation:\n{all_single_ticket_types}')
+
+        success = False
+        while not success:
+            try:
+                day = int(input(f'Enter a number of days for the {days_separation_name} separation: '))
+            except ValueError:
+                print('\033[93mEnter a number!\033[0m')
+            else:
+                if day >= 0:
+                    days.insert(i, day)
+                    print(f'\033[92mDays of separation for {days_separation_name} ticket for event {name} has been'
+                          f' added successfully!\033[0m')
+                    i += 1
+                    success = True
+                else:
+                    print(f'\033[93mEnter a number which is bigger than 0 or equal to 0!\033[0m')
+
         answer = answer_interpreter(input(f'Do you want to add a new key number of days for ticket types'
-                                          f'separation for {name}?: '))
+                                          f' separation for {name}?: '))
 
-
-
-
-
-
-
-
-
+    events.append(Event(name, date, price, days_separation_names, days, ticket_types, kfs))
+    print(f'\033[92mAn event {name} has been formed successfully!\033[0m')
 
 
 def main():
-    date_of_event = '2000/01/01'  # на випадок проблем з інпутом
+    date_of_event = '2023/01/01'
 
-    ev = Event('Stepan Hiha concert', '2023/02/02', 200, ['Late', 'Advance'], [10, 60], ['Late', 'Advance', 'Student'],
-               [1.1, 0.6, 0.5])
+    # ev = Event('Stepan Hiha concert', '2023/02/02', 200, ['Late', 'Advance'], [10, 60], ['Late', 'Advance', 'Student',
+    #            [1.1, 0.6, 0.5])
+
+    continuation = answer_interpreter(input('Do you want to add an event?: '))
+    while continuation:
+        add_event()
+        continuation = answer_interpreter(input('Do you want to add an event?: '))
+
+    # print(*events, sep='\n')
 
     continuation = True
     while continuation:
