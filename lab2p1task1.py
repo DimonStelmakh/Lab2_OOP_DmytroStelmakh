@@ -6,12 +6,11 @@ events = []
 
 
 class Ticket:
-    def __init__(self, number, price, regular_price, date_of_event, ticket_type):
+    def __init__(self, number, event, actual_price, ticket_type):
         self.number = number
-        self.price = price
-        self.regular_price = regular_price
+        self.actual_price = actual_price
+        self.event = event
         self.ticket_type = ticket_type
-        self.__date_of_event = date_of_event
         self.__date_of_purchase = datetime.today()
 
     @property
@@ -19,12 +18,12 @@ class Ticket:
         return self.__number
 
     @property
-    def price(self):
-        return int(self.__price)
+    def actual_price(self):
+        return int(self.__actual_price)
 
     @property
-    def regular_price(self):
-        return int(self.__regular_price)
+    def event(self):
+        return self.event
 
     @property
     def ticket_type(self):
@@ -36,17 +35,17 @@ class Ticket:
             raise TypeError('TypeError. Expected "int" type')
         self.__number = value
 
-    @price.setter
-    def price(self, value):
+    @actual_price.setter
+    def actual_price(self, value):
         if not isinstance(value, (int, float)):
             raise TypeError('TypeError. Expected "int" or "float" type')
-        self.__price = value
+        self.__actual_price = value
 
-    @regular_price.setter
-    def regular_price(self, value):
-        if not isinstance(value, (int, float)):
-            raise TypeError('TypeError. Expected "int" or "float" type')
-        self.__regular_price = value
+    @event.setter
+    def event(self, value):
+        if not isinstance(value, Event):
+            raise TypeError('TypeError. Expected "Event" type')
+        self.__event = value
 
     @ticket_type.setter
     def ticket_type(self, value):
@@ -55,38 +54,39 @@ class Ticket:
         self.__ticket_type = value
 
     def __str__(self):
-        return f'Number: {self.__number}, price: {int(self.__price)} (regular: {int(self.__regular_price)}), \
-date: {self.__date_of_event}, type: {self.__ticket_type}'
+        return f'Number: {self.__number}, event: {self.__event.name}, price: {self.__actual_price}' \
+               f' (regular: {int(self.__event.regular_price)}), date: {self.__event.date_of_event},' \
+               f' type: {self.__ticket_type}'
 
 
 class RegularTicket(Ticket):
-    def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price, regular_price, date_of_event, 'Regular')
+    def __init__(self, number, event):
+        super().__init__(number, event, event.regular_price, 'Regular')
 
 
 class AdvanceTicket(Ticket):
-    def __init__(self, number, price, regular_price, date_of_event, ticket_type):
-        super().__init__(number, price * 0.6, regular_price, date_of_event, ticket_type)
+    def __init__(self, number, event, actual_price, ticket_type):
+        super().__init__(number, event, actual_price * event.kfs['Advance'], ticket_type)
 
 
 class LateTicket(Ticket):
-    def __init__(self, number, price, regular_price, date_of_event, ticket_type):
-        super().__init__(number, price * 1.1, regular_price, date_of_event, ticket_type)
+    def __init__(self, number, event, actual_price, ticket_type):
+        super().__init__(number, event, actual_price * event.kfs['Late'], ticket_type)
 
 
 class StudentTicket(Ticket):
-    def __init__(self, number, regular_price, date_of_event, ticket_type):
-        super().__init__(number, regular_price * 0.5, regular_price, date_of_event, ticket_type)
+    def __init__(self, number, event, actual_price, ticket_type):
+        super().__init__(number, event, actual_price * event.kfs['Student'], ticket_type)
 
 
 class StudentLateTicket(StudentTicket, LateTicket):
-    def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price, date_of_event, 'Student Late')
+    def __init__(self, number, event, actual_price):
+        super().__init__(number, event, actual_price, 'Student Late')
 
 
 class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
-    def __init__(self, number, regular_price, date_of_event):
-        super().__init__(number, regular_price, date_of_event, 'Student Advance')
+    def __init__(self, number, event, actual_price):
+        super().__init__(number, event, actual_price, 'Student Advance')
 
 
 class Event:
@@ -109,30 +109,67 @@ class Event:
             for i in range(len(days)):
                 self.days[days_separation_names[i]] = days[i]
 
+    def __str__(self):
+        return f'NAME: {self.__name}, DATE: {self.date_of_event}, PRICE: {self.regular_price} UAH,' \
+               f' TICKET TYPES: {list(self.kfs.keys())}'
 
-def ticket_interpreter(number, regular_price, date_of_event, isstudent, days_advance=60, days_late=10):
-    days_left = (datetime.strptime(date_of_event, "%Y/%m/%d").date() - datetime.today().date()).days
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def date_of_event(self):
+        return self.__date_of_event
+
+    @property
+    def regular_price(self):
+        return self.__regular_price
+
+    @name.setter
+    def name(self, value):
+        self.__name = value
+
+    @date_of_event.setter
+    def date_of_event(self, value):
+        if validate_date_format(value):
+            value = datetime.strptime(value, '%Y/%m/%d').date()
+            self.__date_of_event = value
+        else:
+            raise ValueError('Incorrect date!')
+
+    @regular_price.setter
+    def regular_price(self, value):
+        try:
+            self.__regular_price = int(value)
+        except ValueError:
+            raise ValueError('Price is not a number!')
+
+
+def ticket_interpreter(number, event, isstudent):
+    actual_price = event.regular_price
+    days_left = (event.date_of_event - datetime.today().date()).days
+
     if days_left < 0:
-        return '\033[93m''This event has already taken place\033[0m'
-    if isstudent:
-        if days_left > days_advance:
-            tickets.append(StudentAdvanceTicket(number, regular_price, date_of_event))
+        return '\033[93m''This event has already taken place!\033[0m'
+    if event.kfs['Student'] and isstudent:
+        if event.days['Advance'] and days_left > event.days['Advance'] and event.kfs['Advanve']:
+            tickets.append(StudentAdvanceTicket(number, event))
             return '\033[92mA student advance ticket has been added successfully!\033[0m'
-        elif 0 <= days_left < days_late:
-            tickets.append(StudentLateTicket(number, regular_price, date_of_event))
+        elif event.days['Late'] and 0 <= days_left < event.days['Late'] and event.kfs['Late']:
+            tickets.append(StudentLateTicket(number, event))
             return '\033[92mA student late ticket has been added successfully!\033[0m'
         else:
-            tickets.append(StudentTicket(number, regular_price, date_of_event, 'Student'))
+            tickets.append(StudentTicket(number, event, 'Student'))
             return '\033[92mA student ticket has been added successfully!\033[0m'
     else:
-        if days_left > days_advance:
-            tickets.append(AdvanceTicket(number, regular_price, regular_price, date_of_event, 'Advance'))
+        if event.days['Advance'] and days_left > event.days['Advance'] and event.kfs['Advance']:
+            tickets.append(AdvanceTicket(number, event, 'Advance'))
             return '\033[92mAn advance ticket has been added successfully!\033[0m'
-        elif 0 <= days_left < days_late:
-            tickets.append(LateTicket(number, regular_price, regular_price, date_of_event, 'Late'))
+        elif event.days['Late'] and 0 <= days_left < event.days['Late'] and event.kfs['Late']:
+            tickets.append(LateTicket(number, event, 'Late'))
             return '\033[92mA late ticket has been added successfully!\033[0m'
         else:
-            tickets.append(RegularTicket(number, regular_price, date_of_event))
+            tickets.append(RegularTicket(number, event, 'Regular'))
             return '\033[92mA regular ticket has been added successfully!\033[0m'
 
 
@@ -262,6 +299,23 @@ def add_event():
     print(f'\033[92mAn event {name} has been formed successfully!\033[0m')
 
 
+def event_finder(key, by_date):
+    if by_date:
+        if validate_date_format(key):
+            try:
+                key = datetime.strptime(key, '%Y/%m/%d').date()
+                return [ele for ele in events if ele.date_of_event == key].pop()
+            except IndexError:
+                return '\033[93mThere is no such event!\033[0m'
+        else:
+            return '\033[91mEnter a date in an appropriate format: yyyy/mm/dd !\033[0m'
+    else:
+        try:
+            return [ele for ele in events if ele.date == key].pop()
+        except IndexError:
+            return '\033[93mThere is no such event!\033[0m'
+
+
 def main():
     date_of_event = '2023/01/01'
 
@@ -277,14 +331,33 @@ def main():
 
     continuation = True
     while continuation:
-        valid_date = False
-        while not valid_date:
-            date_of_event = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
-            valid_date = validate_date_format(date_of_event)
+
+        search_by_date = answer_interpreter(input('Do you want to find an event to visit by date or by name?\n'
+                                                  'If by date, enter "+" or "yes", if by name, enter "-" or "no": '))
+
+        key = '2023/01/01'
+
+        alright = False
+        while not alright:
+            if search_by_date:
+                valid_date = False
+                while not valid_date:
+                    key = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
+                    valid_date = validate_date_format(date_of_event)
+            else:
+                key = input('Enter a name of the event: ')
+
+            event = event_finder(key, search_by_date)
+
+            if isinstance(event, Event):
+                print('An event found is: ', event, sep='')
+                alright = answer_interpreter(input('\nAlright?'))
+            else:
+                print(event)
 
         isstudent = answer_interpreter(input('Are you a student? (+/-): '))
 
-        print(ticket_interpreter(random.randint(1000, 9999), 100, date_of_event, isstudent))
+        print(ticket_interpreter(random.randint(1000, 9999), event, isstudent))
 
         print('\nYour tickets:', *tickets, sep='\n')
 
