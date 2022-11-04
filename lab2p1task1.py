@@ -254,8 +254,8 @@ def add_event():
                 kf = float(input(f'Enter a coefficient that the regular price is multiplied by for the {ticket_type}'
                                  f' ticket.\nDefault value is 1 (no multiplication): '))
             except ValueError:
-                print('\033[93mEnter a number!\n'
-                      'Important! numbers with floating point should have a dot and not a coma!\033[0m')
+                print('\033[91mEnter a number!\n'
+                      '\033[93mImportant! numbers with floating point should have a dot and not a coma!\033[0m')
             else:
                 if 0 <= kf <= max_kf:
                     kfs.insert(i, kf)
@@ -325,15 +325,10 @@ def event_finder(key, by_date):
 
 
 def main():
-    date_of_event = '2023/01/01'
-
-    # ev = Event('Stepan Hiha concert', '2023/02/02', 200, ['Late', 'Advance'], [10, 60], ['Late', 'Advance', 'Student',
-    #            [1.1, 0.6, 0.5])
-
     continuation = True
     while continuation:
         add_event()
-        print('All events:', *events, sep='\n', end='\n\n')
+        print('\nAll events:', *events, sep='\n', end='\n\n')
         continuation = answer_interpreter(input('Do you want to add one more event?: '))
 
     continuation = True
@@ -350,14 +345,14 @@ def main():
                 valid_date = False
                 while not valid_date:
                     key = input('Enter a date of the event you want to visit in format yyyy/mm/dd: ')
-                    valid_date = validate_date_format(date_of_event)
+                    valid_date = validate_date_format(key)
             else:
                 key = input('Enter a name of the event: ')
 
             event = event_finder(key, search_by_date)
 
             if isinstance(event, Event):
-                print('An event found is:', event, sep='\n')
+                print('\nAn event found is:', event, sep='\n')
                 alright = answer_interpreter(input('\nAlright?: '))
             else:
                 print(event)
@@ -379,6 +374,8 @@ def main():
         if find_answer:
             print(ticket_finder(int(input('\nEnter a ticket number: '))))
             continuation = answer_interpreter(input('\nWant to find another one? (+/-): '))
+
+    print('\033[92m\nEnjoy your events!\033[0m')
 
 
 main()
