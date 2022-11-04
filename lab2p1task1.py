@@ -75,18 +75,18 @@ class LateTicket(Ticket):
 
 
 class StudentTicket(Ticket):
-    def __init__(self, number, event, actual_price, ticket_type):
-        super().__init__(number, event, actual_price * event.kfs['Student'], ticket_type)
+    def __init__(self, number, event, ticket_type):
+        super().__init__(number, event, event.regular_price * event.kfs['Student'], ticket_type)
 
 
 class StudentLateTicket(StudentTicket, LateTicket):
-    def __init__(self, number, event, actual_price):
-        super().__init__(number, event, actual_price, 'Student Late')
+    def __init__(self, number, event):
+        super().__init__(number, event, 'Student Late')
 
 
 class StudentAdvanceTicket(StudentTicket, AdvanceTicket):
-    def __init__(self, number, event, actual_price):
-        super().__init__(number, event, actual_price, 'Student Advance')
+    def __init__(self, number, event):
+        super().__init__(number, event, 'Student Advance')
 
 
 class Event:
@@ -145,31 +145,34 @@ class Event:
             raise ValueError('Price is not a number!')
 
 
-def ticket_interpreter(number, event, isstudent):
-    actual_price = event.regular_price
+def ticket_interpreter(number, event, isstudent=False):
     days_left = (event.date_of_event - datetime.today().date()).days
 
     if days_left < 0:
         return '\033[93m''This event has already taken place!\033[0m'
-    if event.kfs['Student'] and isstudent:
-        if event.days['Advance'] and days_left > event.days['Advance'] and event.kfs['Advanve']:
-            tickets.append(StudentAdvanceTicket(number, event))
-            return '\033[92mA student advance ticket has been added successfully!\033[0m'
-        elif event.days['Late'] and 0 <= days_left < event.days['Late'] and event.kfs['Late']:
-            tickets.append(StudentLateTicket(number, event))
-            return '\033[92mA student late ticket has been added successfully!\033[0m'
+    if 'Student' in event.kfs and isstudent:
+        if hasattr(event, 'days') and 'Advance' in event.days and 'Advance' in event.kfs:
+            if days_left > event.days['Advance']:
+                tickets.append(StudentAdvanceTicket(number, event))
+                return '\033[92mA student advance ticket has been added successfully!\033[0m'
+        elif hasattr(event, 'days') and 'Late' in event.days and 'Late' in event.kfs:
+            if 0 <= days_left < event.days['Late']:
+                tickets.append(StudentLateTicket(number, event))
+                return '\033[92mA student late ticket has been added successfully!\033[0m'
         else:
             tickets.append(StudentTicket(number, event, 'Student'))
             return '\033[92mA student ticket has been added successfully!\033[0m'
     else:
-        if event.days['Advance'] and days_left > event.days['Advance'] and event.kfs['Advance']:
-            tickets.append(AdvanceTicket(number, event, 'Advance'))
-            return '\033[92mAn advance ticket has been added successfully!\033[0m'
-        elif event.days['Late'] and 0 <= days_left < event.days['Late'] and event.kfs['Late']:
-            tickets.append(LateTicket(number, event, 'Late'))
-            return '\033[92mA late ticket has been added successfully!\033[0m'
+        if hasattr(event, 'days') and 'Advance' in event.days and 'Advance' in event.kfs:
+            if days_left > event.days['Advance']:
+                tickets.append(AdvanceTicket(number, event, event.regular_price, 'Advance'))
+                return '\033[92mAn advance ticket has been added successfully!\033[0m'
+        elif hasattr(event, 'days') and 'Late' in event.days and 'Late' in event.kfs:
+            if 0 <= days_left < event.days['Late']:
+                tickets.append(LateTicket(number, event, event.regular_price, 'Late'))
+                return '\033[92mA late ticket has been added successfully!\033[0m'
         else:
-            tickets.append(RegularTicket(number, event, 'Regular'))
+            tickets.append(RegularTicket(number, event))
             return '\033[92mA regular ticket has been added successfully!\033[0m'
 
 
@@ -222,10 +225,10 @@ def add_event():
             else:
                 print('\033[93mEnter a price which is bigger than 0 or equal to 0!\033[0m')
 
-    ticket_types = []
-    kfs = []
+    ticket_types = ['Regular']
+    kfs = [1]
     answer = answer_interpreter(input(f'Do you want to add a new ticket type for {name}?: '))
-    i = 0
+    i = 1
     while answer:
 
         ticket_type = ''
@@ -233,8 +236,12 @@ def add_event():
         while not success:
             ticket_type = input('Enter a name of the ticket type: ')
             if ticket_type in all_single_ticket_types:
-                ticket_types.insert(i, ticket_type)
-                success = True
+                if ticket_type not in ticket_types:
+                    ticket_types.insert(i, ticket_type)
+                    success = True
+                else:
+                    print(f'\033[93mThis type of ticket already exists!\033[0m\nAll of ticket types for this event are:'
+                          f'\n{ticket_types}')
             else:
                 print(f'\033[93mThis type of ticket is unavailable to add!\033[0m\n'
                       f'Here is the list of available tickets:\n{all_single_ticket_types}')
@@ -247,11 +254,12 @@ def add_event():
                 kf = float(input(f'Enter a coefficient that the regular price is multiplied by for the {ticket_type}'
                                  f' ticket.\nDefault value is 1 (no multiplication): '))
             except ValueError:
-                print('\033[93mEnter a number!\033[0m')
+                print('\033[93mEnter a number!\n'
+                      'Important! numbers with floating point should have a dot and not a coma!\033[0m')
             else:
                 if 0 <= kf <= max_kf:
                     kfs.insert(i, kf)
-                    print(f'\033[92mA ticket type {ticket_type} for event {name} has been added successfully!\033[0m')
+                    print(f'\033[92m{ticket_type} ticket for event {name} has been added successfully!\033[0m')
                     i += 1
                     success = True
                 else:
@@ -262,7 +270,7 @@ def add_event():
     days_separation_names = []
     days = []
     answer = answer_interpreter(input(f'Do you want to add a new key number of days for ticket types'
-                                      f'separation for {name}?: '))
+                                      f' separation for {name}?: '))
     i = 0
     while answer:
         days_separation_name = ''
@@ -311,7 +319,7 @@ def event_finder(key, by_date):
             return '\033[91mEnter a date in an appropriate format: yyyy/mm/dd !\033[0m'
     else:
         try:
-            return [ele for ele in events if ele.date == key].pop()
+            return [ele for ele in events if ele.name == key].pop()
         except IndexError:
             return '\033[93mThere is no such event!\033[0m'
 
@@ -322,23 +330,22 @@ def main():
     # ev = Event('Stepan Hiha concert', '2023/02/02', 200, ['Late', 'Advance'], [10, 60], ['Late', 'Advance', 'Student',
     #            [1.1, 0.6, 0.5])
 
-    continuation = answer_interpreter(input('Do you want to add an event?: '))
+    continuation = True
     while continuation:
         add_event()
-        continuation = answer_interpreter(input('Do you want to add an event?: '))
-
-    # print(*events, sep='\n')
+        print('All events:', *events, sep='\n', end='\n\n')
+        continuation = answer_interpreter(input('Do you want to add one more event?: '))
 
     continuation = True
     while continuation:
 
-        search_by_date = answer_interpreter(input('Do you want to find an event to visit by date or by name?\n'
-                                                  'If by date, enter "+" or "yes", if by name, enter "-" or "no": '))
-
         key = '2023/01/01'
+        event = events[0]
 
         alright = False
         while not alright:
+            search_by_date = answer_interpreter(input('Do you want to find an event to visit by date or by name?\nIf'
+                                                      ' by date, enter "+" or "yes", if by name, enter "-" or "no": '))
             if search_by_date:
                 valid_date = False
                 while not valid_date:
@@ -350,14 +357,16 @@ def main():
             event = event_finder(key, search_by_date)
 
             if isinstance(event, Event):
-                print('An event found is: ', event, sep='')
-                alright = answer_interpreter(input('\nAlright?'))
+                print('An event found is:', event, sep='\n')
+                alright = answer_interpreter(input('\nAlright?: '))
             else:
                 print(event)
 
-        isstudent = answer_interpreter(input('Are you a student? (+/-): '))
-
-        print(ticket_interpreter(random.randint(1000, 9999), event, isstudent))
+        if 'Student' in event.kfs:
+            isstudent = answer_interpreter(input('Are you a student? (+/-): '))
+            print(ticket_interpreter(random.randint(1000, 9999), event, isstudent))
+        else:
+            print(ticket_interpreter(random.randint(1000, 9999), event))
 
         print('\nYour tickets:', *tickets, sep='\n')
 
