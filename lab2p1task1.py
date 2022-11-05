@@ -54,9 +54,9 @@ class Ticket:
         self.__ticket_type = value
 
     def __str__(self):
-        return f'Number: {self.__number}, event: {self.__event.name}, price: {self.__actual_price}' \
-               f' (regular: {int(self.__event.regular_price)}), date: {self.__event.date_of_event},' \
-               f' type: {self.__ticket_type}'
+        return f'NUMBER: {self.__number}, EVENT: {self.__event.name}, PRICE: {self.__actual_price}' \
+               f' (regular: {int(self.__event.regular_price)}), DATE: {self.__event.date_of_event},' \
+               f' TYPE: {self.__ticket_type}'
 
 
 class RegularTicket(Ticket):
@@ -167,7 +167,7 @@ def ticket_interpreter(number, event, isstudent=False):
             if days_left > event.days['Advance']:
                 tickets.append(AdvanceTicket(number, event, event.regular_price, 'Advance'))
                 return '\033[92mAn advance ticket has been added successfully!\033[0m'
-        elif hasattr(event, 'days') and 'Late' in event.days and 'Late' in event.kfs:
+        if hasattr(event, 'days') and 'Late' in event.days and 'Late' in event.kfs:
             if 0 <= days_left < event.days['Late']:
                 tickets.append(LateTicket(number, event, event.regular_price, 'Late'))
                 return '\033[92mA late ticket has been added successfully!\033[0m'
@@ -201,9 +201,10 @@ def ticket_finder(key):
 
 
 def add_event():
-    date = '2000/01/01'  # на випадок проблем з інпутом
+    date = '2023/01/01'  # на випадок проблем з інпутом
 
     all_single_ticket_types = ['Student', 'Regular', 'Late', 'Advance']
+    all_separation_days_names = ['Late', 'Advance']
 
     name = str(input('Enter a name of the event: '))
 
@@ -247,7 +248,6 @@ def add_event():
                       f'Here is the list of available tickets:\n{all_single_ticket_types}')
 
         max_kf = 10
-
         success = False
         while not success:
             try:
@@ -277,22 +277,22 @@ def add_event():
         success = False
         while not success:
             days_separation_name = input('Enter a name of the number of days for separation: ')
-            if days_separation_name in all_single_ticket_types:
+            if days_separation_name in all_separation_days_names:
                 days_separation_names.insert(i, days_separation_name)
                 success = True
             else:
                 print(f'\033[93mThis days of separation number is unavailable to add!\033[0m\n'
-                      f'Here is the list of available names for days of separation:\n{all_single_ticket_types}')
+                      f'Here is the list of available names for days of separation:\n{all_separation_days_names}')
 
         success = False
         while not success:
             try:
-                day = int(input(f'Enter a number of days for the {days_separation_name} separation: '))
+                value = int(input(f'Enter a number of days for the {days_separation_name} separation: '))
             except ValueError:
                 print('\033[93mEnter a number!\033[0m')
             else:
-                if day >= 0:
-                    days.insert(i, day)
+                if value >= 0:
+                    days.insert(i, value)
                     print(f'\033[92mDays of separation for {days_separation_name} ticket for event {name} has been'
                           f' added successfully!\033[0m')
                     i += 1
@@ -302,6 +302,18 @@ def add_event():
 
         answer = answer_interpreter(input(f'Do you want to add a new key number of days for ticket types'
                                           f' separation for {name}?: '))
+
+    if len(days_separation_names) == len(days):
+        if 'Late' in ticket_types and 'Late' not in days_separation_names:
+            late_default_value = 10
+            days_separation_names.append('Late')
+            days.append(late_default_value)
+        if 'Advance' in ticket_types and 'Advance' not in days_separation_names:
+            advance_default_value = 60
+            days_separation_names.append('Advance')
+            days.append(advance_default_value)
+    else:
+        print('\033[91mYou have skipped the question! Data is not full, error!\033[0m')
 
     events.append(Event(name, date, price, days_separation_names, days, ticket_types, kfs))
     print(f'\033[92mAn event {name} has been formed successfully!\033[0m')
@@ -322,6 +334,10 @@ def event_finder(key, by_date):
             return [ele for ele in events if ele.name == key].pop()
         except IndexError:
             return '\033[93mThere is no such event!\033[0m'
+
+
+def print_all_tickets():
+    print('\nYour tickets:', *tickets, sep='\n')
 
 
 def main():
@@ -357,15 +373,19 @@ def main():
             else:
                 print(event)
 
-        if 'Student' in event.kfs:
-            isstudent = answer_interpreter(input('Are you a student? (+/-): '))
-            print(ticket_interpreter(random.randint(1000, 9999), event, isstudent))
-        else:
-            print(ticket_interpreter(random.randint(1000, 9999), event))
+        same_event = True
+        while same_event:
+            if 'Student' in event.kfs:
+                isstudent = answer_interpreter(input('Are you a student? (+/-): '))
+                print(ticket_interpreter(random.randint(1000, 9999), event, isstudent))
+            else:
+                print(ticket_interpreter(random.randint(1000, 9999), event))
 
-        print('\nYour tickets:', *tickets, sep='\n')
+            print_all_tickets()
+            same_event = answer_interpreter(input('\nWant to buy one more ticket for the same event? (+/-): '))
 
-        continuation = answer_interpreter(input('\nWant to buy one more ticket? (+/-): '))
+        print_all_tickets()
+        continuation = answer_interpreter(input('\nWant to buy one more ticket for another event? (+/-): '))
 
     find_answer = answer_interpreter(input('Want to find a ticket among those you have bought? (+/-): '))
 
