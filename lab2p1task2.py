@@ -66,6 +66,21 @@ class PizzaOfTheDay(Pizza):
         super().__init__(pizza_of_the_day[day_of_the_week], size, extra_ingredients)
 
 
+class Order:
+    def __init__(self, first_pizza):
+        self.pizzas = [first_pizza]
+        self.total_value = 0
+
+    def __str__(self):
+        return f'PIZZA'
+
+    def add_pizza(self, pizza):
+        if isinstance(pizza, Pizza):
+            self.pizzas.append(pizza)
+        else:
+            raise TypeError
+
+
 def answer_interpreter(answer):
     return True if answer in ('yes', 'yeah', 'y', 'Yes', 'Yeah', 'Y', 'Так', 'так', 'Да', 'да', 'д', 'т', 'Д', 'Т', '+',
                               'угу', 'ага') else False
