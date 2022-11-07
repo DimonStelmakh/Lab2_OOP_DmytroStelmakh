@@ -178,12 +178,15 @@ def ticket_interpreter(number, event, isstudent=False):
 
 def answer_interpreter(answer):
     return True if answer in ('yes', 'yeah', 'y', 'Yes', 'Yeah', 'Y', 'Так', 'так', 'Да', 'да', 'д', 'т', 'Д', 'Т', '+',
-                              'угу', 'ага') else False
+                              'угу', 'ага', 'Ja') else False
 
 
 def validate_date_format(date_string):
     try:
-        datetime.strptime(date_string, '%Y/%m/%d')
+        date = datetime.strptime(date_string, '%Y/%m/%d')
+        if datetime.today() >= date:
+            print('\033[93mDate must not be in the past!\033[0m')
+            return False
     except ValueError:
         print("\033[91mIncorrect date format (should be yyyy/mm/dd) or this date doesn't exist!\033[0m")
         return False
