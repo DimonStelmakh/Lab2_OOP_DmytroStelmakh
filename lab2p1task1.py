@@ -220,7 +220,7 @@ def add_event():
     success = False
     while not success:
         try:
-            price = int(input('Enter a regular price of the event: '))
+            price = round(float(input('Enter a regular price of the event: ')), 2)
         except ValueError:
             print('\033[93mEnter a number!\033[0m')
         else:
@@ -391,12 +391,13 @@ def main():
         continuation = answer_interpreter(input('\nWant to buy one more ticket for another event? (+/-): '))
 
     find_answer = answer_interpreter(input('Want to find a ticket among those you have bought? (+/-): '))
-
     continuation = True
     while continuation:
         if find_answer:
             print(ticket_finder(int(input('\nEnter a ticket number: '))))
             continuation = answer_interpreter(input('\nWant to find another one? (+/-): '))
+        else:
+            continuation = False
 
     print('\033[92m\nEnjoy your events!\033[0m')
 
