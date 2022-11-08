@@ -1,42 +1,57 @@
 from datetime import datetime
 
+pizza_types = ['Cheese', 'Veggie', 'Pepperoni', 'Meat', 'Margherita', 'BBQ Chicken', 'Supreme']
+sizes = [30, 40, 50]
+extra_ingredients_list = ['Meat', 'Cheese', 'Mushrooms', 'Broccoli', 'Pineapple', 'Onion']
+
+
+class PriceDescriptor:
+    def __init__(self):
+        self.base_value = {
+            "Cheese": 200,
+            "Veggie": 180,
+            "Pepperoni": 210,
+            "Meat": 230,
+            "Margherita": 200,
+            "BBQ Chicken": 220,
+            "Supreme": 240
+        }
+
+        self.size_coefs = {
+            30: 1,
+            40: 1.4,
+            50: 1.8
+        }
+
+        self.extra_ingredients_values = {
+            "Meat": 30,
+            "Cheese": 25,
+            "Mushrooms": 20,
+            "Broccoli": 20,
+            "Pineapple": 25,
+            "Onion": 15
+        }
+
+    def __get__(self, instance_self, instance_class):
+        real_price = self.base_value[instance_self.name] * self.size_coefs[instance_self.size]
+
+        real_extras_price = 0
+        if isinstance(instance_self.extra_ingredients, list):
+            for item in instance_self.extra_ingredients:
+                real_extras_price += self.extra_ingredients_values[item] * self.size_coefs[instance_self.size]
+
+        real_price += real_extras_price
+        return real_price
+
 
 class Pizza:
-
-    __pizza_types = ['Cheese', 'Veggie', 'Pepperoni', 'Meat', 'Margherita', 'BBQ Chicken', 'Supreme']
-    __sizes = [30, 40, 50]
-    __base_value = {
-        "Cheese": 200,
-        "Veggie": 180,
-        "Pepperoni": 210,
-        "Meat": 230,
-        "Margherita": 200,
-        "BBQ Chicken": 220,
-        "Supreme": 240
-    }
-
-    __size_coefs = {
-        30: 1,
-        40: 1.4,
-        50: 1.8
-    }
-
-    __extra_ingredients = ['Meat', 'Cheese', 'Mushrooms', 'Broccoli', 'Pineapple', 'Onion']
-
-    __extra_ingredients_valus = {
-        "Meat": 30,
-        "Cheese": 25,
-        "Mushrooms": 20,
-        "Brocolli": 20,
-        "Pineapple": 25,
-        "Onion": 15
-    }
 
     def __init__(self, name, size, extra_ingredients=None):
         self.name = name
         self.size = size
         self.extra_ingredients = extra_ingredients
-        self.value = self.__base_value[self.name]
+
+    __real_price = PriceDescriptor()
 
     @property
     def name(self):
@@ -51,16 +66,16 @@ class Pizza:
         return self.__extra_ingredients
 
     @property
-    def value(self):
-        return self.__value
+    def real_price(self):
+        return self.__real_price
 
     @name.setter
     def name(self, value):
         if isinstance(value, str):
-            if value in self.__pizza_types:
+            if value in pizza_types:
                 self.__name = value
             else:
-                raise ValueError(f'No such pizza. Available pizzas: {self.__pizza_types}')
+                raise ValueError(f'No such pizza. Available pizzas: {pizza_types}')
         else:
             raise TypeError('Expected "str" type.')
 
@@ -70,33 +85,25 @@ class Pizza:
             value = int(value)
         except ValueError:
             print('Expected a number.')
-        if value in self.__sizes:
+        if value in sizes:
             self.__size = int(value)
         else:
-            raise ValueError(f'No such size. Available sizes: {self.__sizes}')
+            raise ValueError(f'No such size. Available sizes: {sizes}')
 
     @extra_ingredients.setter
     def extra_ingredients(self, value):
         if not value:
             self.__extra_ingredients = None
-        elif isinstance(value, (str, list)):
-            if value in self.__extra_ingredients:
-                self.__extra_ingredients = value
-            else:
-                raise ValueError('There is no such extra ingredient!\n'
-                                 f'Here is the list of all available extra ingredients:\n{self.__extra_ingredients}')
+        elif isinstance(value, list):
+            self.__extra_ingredients = []
+            for item in value:
+                if item in extra_ingredients_list:
+                    self.__extra_ingredients.append(item)
+                else:
+                    raise ValueError('There is no such extra ingredient!\n'
+                                     f'Here is the list of all available extra ingredients:\n{extra_ingredients_list}')
         else:
-            raise TypeError('Expected "str" or "list" type.')
-
-    @value.setter
-    def value(self, value):
-        if isinstance(value, (int, float)):
-            if value >= 0:
-                self.__value = value
-            else:
-                raise ValueError('The price cannot be less than 0.')
-        else:
-            raise TypeError('Expected "int" or "float" type of value.')
+            raise TypeError('Expected "list" type.')
 
     def __str__(self):
         if not self.__extra_ingredients:
@@ -106,25 +113,28 @@ class Pizza:
 
 
 class PizzaOfTheDay(Pizza):
+
+    pizza_of_the_day = {
+        1: "Cheese",
+        2: "Veggie",
+        3: "Pepperoni",
+        4: "Meat",
+        5: "Margherita",
+        6: "BBQ Chicken",
+        7: "Supreme"
+    }
+
     def __init__(self, day_of_the_week, size, extra_ingredients=None):
-
-        pizza_of_the_day = {
-            1: "Cheese",
-            2: "Veggie",
-            3: "Pepperoni",
-            4: "Meat",
-            5: "Margherita",
-            6: "BBQ Chicken",
-            7: "Supreme"
-        }
-
-        super().__init__(pizza_of_the_day[day_of_the_week], size, extra_ingredients)
+        super().__init__(self.pizza_of_the_day[day_of_the_week], size, extra_ingredients)
 
 
 class Order:
     def __init__(self, first_pizza):
-        self.__pizzas = [first_pizza]
-        self.__total_value = first_pizza.value
+        if isinstance(first_pizza, Pizza):
+            self.__pizzas = [first_pizza]
+            self.__total_value = int(first_pizza.real_price)
+        else:
+            raise TypeError('Type "Pizza" needed to construct an order!')
 
     def __str__(self):
         aboba = "\n"
@@ -136,7 +146,7 @@ class Order:
             self.__pizzas.append(pizza)
         else:
             raise TypeError('Expected an object of "Pizza".')
-        self.__total_value += pizza.value
+        self.__total_value += int(pizza.real_price)
 
     def remove_last_pizza(self):
         self.__pizzas.pop()
@@ -147,31 +157,96 @@ def answer_interpreter(answer):
                               'угу', 'ага') else False
 
 
+def set_pizza_type():
+    pizza_type = None
+    success = False
+    while not success:
+        print(f'Available pizzas: {pizza_types}')
+        pizza_type = input('Choose pizza: ')
+        if pizza_type in pizza_types:
+            success = True
+        else:
+            print(f'\033[93mThis pizza is not available!\033[0m')
+    return pizza_type
+
+
+def set_size():
+    size = 30
+    success = False
+    while not success:
+        print(f'Available sizes: {sizes}')
+        try:
+            size = int(input('Choose size: '))
+        except ValueError:
+            print('\033[93mEnter a number!\033[0m')
+        else:
+            if size in sizes:
+                success = True
+            else:
+                print(f'\033[93mThis size is not available!\033[0m')
+    return size
+
+
+def set_extra_ingredients():
+    extra_ingredients = None
+    success = False
+    while not success:
+        print(f'Available extra ingredients: {extra_ingredients_list}')
+        extra_ingredients_input = input('Add some coma-separated extra ingredients if you want '
+                                        f'(or press Enter to skip): ').split(', ')
+        if extra_ingredients_input[0] != '':
+            extra_ingredients = []
+            appending_error = False
+            for item in extra_ingredients_input:
+                if item in extra_ingredients_list:
+                    extra_ingredients.append(item)
+                else:
+                    print(f'\033[93mAn ingredient {item} is not available.\033[0m')
+                    appending_error = True
+            if not appending_error:
+                success = True
+        else:
+            success = True
+    return extra_ingredients
+
+
 def main():
-    if answer_interpreter(input('Do you want to try our Pizza Of The Day? (+/-): ')):
-        order = Order(PizzaOfTheDay(datetime.today().weekday()+1, input('Enter a size in centimeters (30/40/50): '),
-                      input(f'Add some extra ingredients if you want (or just press Enter to skip): ')))
+    try_pizza_of_the_day = answer_interpreter(input('Do you want to try our Pizza Of The Day? (+/-): '))
+
+    today = 0
+    if try_pizza_of_the_day:
+        today = datetime.today().weekday() + 1
+        print(f'Today it\'s a {PizzaOfTheDay.pizza_of_the_day[today]} pizza!')
+
+        size = set_size()
+        extra_ingredients = set_extra_ingredients()
+
+        order = Order(PizzaOfTheDay(today, size, extra_ingredients))
     else:
-        order = Order(Pizza(input('Enter a name of the pizza: '), input('Enter a size in centimeters (30/40/50): '),
-                      input('Add some extra ingredients if you want (or just press Enter to skip): ')))
+        pizza_type = set_pizza_type()
+        size = set_size()
+        extra_ingredients = set_extra_ingredients()
+
+        order = Order(Pizza(pizza_type, size, extra_ingredients))
+
     print('\n\033[92mThe pizza has been added successfully!\033[0m', order, sep='\n')
 
     continuation = answer_interpreter(input('\nDo you want to order one more pizza?: '))
     while continuation:
-        of_the_day = answer_interpreter(input('One more pizza of the day?: '))
-        if of_the_day:
-            order.add_pizza(PizzaOfTheDay(datetime.today().weekday()+1,
-                            input('Enter a size in centimeters (30/40/50): '),
-                            input('Add some extra ingredients if you want (or just press Enter to skip): ')))
+        if not try_pizza_of_the_day:
+            order.add_pizza(Pizza(set_pizza_type(), set_size(), set_extra_ingredients()))
         else:
-            order.add_pizza(Pizza(input('Enter a name of the pizza: '),
-                            input('Enter a size in centimeters (30/40/50): '),
-                            input('Add some extra ingredients if you want (or just press Enter to skip): ')))
-        print('\n\033[92mThe pizza has been added successfully!\033[0m\n', order)
+            of_the_day = answer_interpreter(input('One more pizza of the day?: '))
+            if of_the_day:
+                order.add_pizza(PizzaOfTheDay(today, set_size(), set_extra_ingredients()))
+            else:
+                order.add_pizza(Pizza(set_pizza_type(), set_size(), set_extra_ingredients()))
+
+        print('\n\033[92mThe pizza has been added successfully!\033[0m', order, sep='\n')
 
         continuation = answer_interpreter(input('\nDo you want to order one more pizza?: '))
 
-    print('\n\033[92mYour order has been formed successfully!\033[0m\n', order)
+    print('\n\033[92mYour order has been completely formed successfully!\033[0m', order, sep='\n')
 
 
 main()
