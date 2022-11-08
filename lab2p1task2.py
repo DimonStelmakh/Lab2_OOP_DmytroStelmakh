@@ -71,39 +71,15 @@ class Pizza:
 
     @name.setter
     def name(self, value):
-        if isinstance(value, str):
-            if value in pizza_types:
-                self.__name = value
-            else:
-                raise ValueError(f'No such pizza. Available pizzas: {pizza_types}')
-        else:
-            raise TypeError('Expected "str" type.')
+        self.__name = value
 
     @size.setter
     def size(self, value):
-        try:
-            value = int(value)
-        except ValueError:
-            print('Expected a number.')
-        if value in sizes:
-            self.__size = int(value)
-        else:
-            raise ValueError(f'No such size. Available sizes: {sizes}')
+        self.__size = value
 
     @extra_ingredients.setter
     def extra_ingredients(self, value):
-        if not value:
-            self.__extra_ingredients = None
-        elif isinstance(value, list):
-            self.__extra_ingredients = []
-            for item in value:
-                if item in extra_ingredients_list:
-                    self.__extra_ingredients.append(item)
-                else:
-                    raise ValueError('There is no such extra ingredient!\n'
-                                     f'Here is the list of all available extra ingredients:\n{extra_ingredients_list}')
-        else:
-            raise TypeError('Expected "list" type.')
+        self.__extra_ingredients = value
 
     def __str__(self):
         if not self.__extra_ingredients:
