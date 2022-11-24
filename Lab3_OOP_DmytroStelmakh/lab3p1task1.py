@@ -181,6 +181,16 @@ class Rational:
         else:
             return '\033[93mA number expected!\033[0m'
 
+    def __ne__(self, other):
+        if isinstance(other, Rational):
+            return round(self.floating_point(), 5) != round(other.floating_point(), 5)
+        elif isinstance(other, float):
+            return round(self.floating_point(), 5) != round(other, 5)
+        elif isinstance(other, int):
+            return round(self.floating_point(), 5) != other
+        else:
+            return '\033[93mA number expected!\033[0m'
+
 
 def main():
     ob1 = Rational(1, 3)
@@ -217,6 +227,7 @@ def main():
     print(ob1 < ob3)
     print(ob2 >= ob3)
     print(ob1 == ob3)
+    print(ob1 != ob3)
 
 
 main()
