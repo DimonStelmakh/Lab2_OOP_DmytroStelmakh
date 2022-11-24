@@ -131,6 +131,57 @@ class Rational:
         else:
             return NotImplemented
 
+    def __gt__(self, other):
+        if isinstance(other, Rational):
+            return round(self.floating_point(), 5) > round(other.floating_point(), 5)
+        elif isinstance(other, float):
+            return round(self.floating_point(), 5) > round(other, 5)
+        elif isinstance(other, int):
+            return round(self.floating_point(), 5) > other
+        else:
+            return '\033[93mA number expected!\033[0m'
+
+    def __ge__(self, other):
+        if isinstance(other, Rational):
+            return round(self.floating_point(), 5) >= round(other.floating_point(), 5)
+        elif isinstance(other, float):
+            return round(self.floating_point(), 5) >= round(other, 5)
+        elif isinstance(other, int):
+            return round(self.floating_point(), 5) >= other
+        else:
+            return '\033[93mA number expected!\033[0m'
+
+    def __lt__(self, other):
+        if isinstance(other, Rational):
+            return round(self.floating_point(), 5) < round(other.floating_point(), 5)
+        elif isinstance(other, float):
+            return round(self.floating_point(), 5) < round(other, 5)
+        elif isinstance(other, int):
+            return round(self.floating_point(), 5) < other
+        else:
+            return '\033[93mA number expected!\033[0m'
+
+    def __le__(self, other):
+        if isinstance(other, Rational):
+            return round(self.floating_point(), 5) <= round(other.floating_point(), 5)
+        elif isinstance(other, float):
+            return round(self.floating_point(), 5) <= round(other, 5)
+        elif isinstance(other, int):
+            return round(self.floating_point(), 5) <= other
+        else:
+            return '\033[93mA number expected!\033[0m'
+
+    def __eq__(self, other):
+        if isinstance(other, Rational):
+            return round(self.floating_point(), 5) == round(other.floating_point(), 5)
+        elif isinstance(other, float):
+            return round(self.floating_point(), 5) == round(other, 5)
+        elif isinstance(other, int):
+            return round(self.floating_point(), 5) == other
+        else:
+            return '\033[93mA number expected!\033[0m'
+
+
 def main():
     ob1 = Rational(1, 3)
     print('Given numbers for object 1 are', ob1.numerator, 'and', ob1.denominator)
@@ -156,11 +207,16 @@ def main():
     print("The general form is:", ob3.general())
     print("The floating point form is:", ob3.floating_point())
 
-    print('\n', sep='')
+    print('\n')
     print(ob1 + ob3, ob1 + 3, ob1 + 0.6666, ob1 + 'f', ob3 + ob1, 3 + ob1, 0.6666 + ob1, sep=', ')
     print(ob1 - ob3, ob1 - 3, ob1 - 0.6666, ob1 - 'f', ob3 - ob1, 3 - ob1, 0.6666 - ob1, sep=', ')
     print(ob1 * ob3, ob1 * 3, ob1 * 0.6666, ob1 * 'f', ob3 * ob1, 3 * ob1, 0.6666 * ob1, sep=', ')
     print(ob1 / ob3, ob1 / 3, ob1 / 0.6666, ob1 / 'f', ob3 / ob1, 3 / ob1, 0.6666 / ob1, sep=', ')
+
+    print('\n')
+    print(ob1 < ob3)
+    print(ob2 >= ob3)
+    print(ob1 == ob3)
 
 
 main()
