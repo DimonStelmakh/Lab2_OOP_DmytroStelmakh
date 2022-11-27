@@ -57,7 +57,8 @@ class Rational:
         else:
             return NotImplemented
 
-    __radd__ = __add__
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def __sub__(self, other):
         if not isinstance(other, (Rational, int, float)):
@@ -105,7 +106,8 @@ class Rational:
         else:
             return NotImplemented
 
-    __rmul__ = __mul__
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __truediv__(self, other):
         if not isinstance(other, (Rational, int, float)):
