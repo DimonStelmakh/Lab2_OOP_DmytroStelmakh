@@ -142,6 +142,15 @@ class Request:
         return self.__add__(other)
 
 
+def report(stock, request):
+    if not isinstance(stock, (list, tuple, dict)):
+        raise TypeError('The first parameter "stock" should be an iterable sequence')
+    if not isinstance(request, Request):
+        raise TypeError('The second parameter "request" should be an instance of class "Request"')
+
+
+
+
 def main():
     stock = Composition()
     print(stock)
